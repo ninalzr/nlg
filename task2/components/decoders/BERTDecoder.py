@@ -41,9 +41,9 @@ class Decoder(nn.Module):
 
 
         """
-        y = y_tuple[0]
-        y_lenghts = y_tuple[1]
-        y_att_mask = y_tuple[2]
+        y = y_tuple[0].to(self.device)
+        y_lenghts = y_tuple[1].to(self.device)
+        y_att_mask = y_tuple[2].to(self.device)
         batch_size = y.size(0)
         y_seq_len = y.size(1)
 
