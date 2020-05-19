@@ -2,8 +2,8 @@ import os, time, gc
 import torch
 import torch.nn as nn
 
-from task2.util.log import Log
-from task2.util.validation_metrics import evaluate
+#from task2.util.log import Log
+#from task2.util.validation_metrics import evaluate
 from tqdm import tqdm
 
 
