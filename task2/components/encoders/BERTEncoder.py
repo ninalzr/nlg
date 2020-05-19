@@ -36,7 +36,7 @@ class Encoder(nn.Module):
 
         """
         self.bertmodel.eval()
-        X, X_lengths, X_att_mask = input_tuple[0], input_tuple[1], input_tuple[2]
+        X, X_lengths, X_att_mask = input_tuple[0].to(self.device), input_tuple[1].to(self.device), input_tuple[2].to(self.device)
         batch_size = X.size(0)
         seq_len = X.size(1)
 
