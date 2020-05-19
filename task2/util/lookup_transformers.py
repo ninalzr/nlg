@@ -4,6 +4,7 @@ class Lookup():
 
         self.model_class = model_class
 
+
         self.bos_token = None
         self.eos_token = None
         self.unk_token = None
@@ -18,7 +19,11 @@ class Lookup():
 
         if model_class == 'bert':
             from transformers import BertTokenizer
-        self._tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
+            self._tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
+
+        if model_class == 't5':
+            from transformers import T5Tokenizer
+            self._tokenizer = T5Tokenizer.from_pretrained('t5-base')
 
         self._tokenizer.add_special_tokens({'pad_token': '<PAD>'})
 
@@ -41,8 +46,9 @@ class Lookup():
             self.load(file_prefix)
 
         def save_special_tokens(self, file_prefix):
-            if self.model_class == "gpt2" or self.model_class == 'bert':
+            if self.model_class == "gpt2" or self.model_class == 'bert' or self.model_class == 't5':
                 special_tokens = {}
+
             if self.bos_token:
                 special_tokens['bos_token'] = self.bos_token
             if self.eos_token:
@@ -96,22 +102,32 @@ class Lookup():
         tokens = self.tokenize(text)
 
         if add_bos_eos_tokens:
+            if self.model_class == 't5':
+                return self.convert_tokens_to_ids(tokens) + [self.convert_tokens_to_ids(self.eos_token)]
             if self.model_class == 'bert':
                 if not self.cls_token or not self.sep_token:
                     raise Exception("Lookup encode error: {} model does not have CLS or SEP tokens set!")
                 return [self.convert_tokens_to_ids(self.cls_token)] + self.convert_tokens_to_ids(tokens) + [
                     self.convert_tokens_to_ids(self.sep_token)]
+
             else:
                 if not self.bos_token or not self.eos_token:
                     raise Exception("Lookup encode error: {} model does not have BOS or EOS tokens set!")
                 return [self.convert_tokens_to_ids(self.bos_token)] + self.convert_tokens_to_ids(tokens) + [
                     self.convert_tokens_to_ids(self.eos_token)]
+
+
         else:
             return self.convert_tokens_to_ids(tokens)
 
     def decode(self, token_ids, skip_bos_eos_tokens=False):
         if skip_bos_eos_tokens:
-            if self.model_class == "bert":
+            if self.model_class == 't5':
+                if len(token_ids) > 0:
+                    if token_ids[-1] == self.convert_tokens_to_ids(self.eos_token):
+                        token_ids = token_ids[:-1]
+
+            elif self.model_class == "bert":
                 if len(token_ids) > 0:
                     if token_ids[0] == self.convert_tokens_to_ids(self.cls_token):
                         token_ids = token_ids[1:]
@@ -134,3 +150,53 @@ class Lookup():
 
     def __len__(self):
         return len(self._tokenizer)
+
+
+if __name__ == "__main__":
+    model = 't5'
+    lookup = Lookup(model)
+    text = "Daisy, Daisy, Give me your answer, do!"
+    print("\n1. String to tokens (tokenize):")
+    tokens = lookup.tokenize(text)
+    print(tokens)
+
+    print("\n2. Tokens to ints (convert_tokens_to_ids):")
+    ids = lookup.convert_tokens_to_ids(tokens)
+    print(ids)
+
+    print("\n2.5 Token to int (convert_tokens_to_ids with a single str):")
+    id = lookup.convert_tokens_to_ids(tokens[0])
+    print(id)
+
+    print("\n3. Ints to tokens (convert_ids_to_tokens):")
+    tokens = lookup.convert_ids_to_tokens(ids)
+    print(tokens)
+
+    print("\n3.5 Int to token (convert_ids_to_tokens with a single int):")
+    token = lookup.convert_ids_to_tokens(id)
+    print(token)
+
+    print("\n4. Tokens to string (convert_tokens_to_string):")
+    recreated_text = lookup.convert_tokens_to_string(tokens)
+    print(recreated_text)
+
+    print("\n5. String to ints (encode):")
+    ids = lookup.encode(text)
+    print(ids)
+
+    print("\n6. Ints to string (decode):")
+    recreated_text = lookup.decode(ids)
+    print(recreated_text)
+
+    print("\n7. Encode adding special tokens:")
+    ids = lookup.encode(text, add_bos_eos_tokens=True)
+    print(ids)
+    print("How it looks like with tokens: {}".format(lookup.convert_ids_to_tokens(ids)))
+
+    print("\n8. Decode skipping special tokens:")
+    recreated_text = lookup.decode(ids, skip_bos_eos_tokens=True)
+    print(recreated_text)
+
+    print("\n9. Vocabulary size:")
+    vocab_size = lookup.__len__()
+    print(vocab_size)
