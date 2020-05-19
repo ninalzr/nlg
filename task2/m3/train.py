@@ -14,7 +14,7 @@ from task2.m3.model import EncoderDecoder
 if __name__ == "__main__":
 
     batch_size = 5
-    data_folder = os.path.join("../..", "data")
+    data_folder = os.path.join("../..", "tiny")
     src_lookup = Lookup('bert')
     tgt_lookup = Lookup('bert')
     lookup = Lookup('bert')
@@ -24,9 +24,11 @@ if __name__ == "__main__":
     max_seq_len_y = max_seq_len_X
     MEI = "Management Overview"
     vocab_size = lookup.__len__()
+    #order = None
+    order = 'seq' #input sentences are in sequential order
 
-    train_loader, valid_loader = loader(data_folder, batch_size, lookup, src_lookup, tgt_lookup, min_seq_len_X, max_seq_len_X,
-                                        min_seq_len_y, max_seq_len_y, MEI=MEI)
+    train_loader, valid_loader = loader(data_folder, batch_size, lookup, src_lookup, tgt_lookup, min_seq_len_X,
+                                        max_seq_len_X,  min_seq_len_y, max_seq_len_y, MEI=MEI, order = None)
 
     print("Loading done, train instances {}, dev instances {}, vocab size src/tgt {}/{}\n".format(
         len(train_loader.dataset.X),
