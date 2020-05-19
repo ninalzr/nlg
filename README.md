@@ -15,3 +15,6 @@ Output: Paragraphs
 
 /task2/m4 - T5
 
+# Training
+
+Modified train_transformers. In progress ..
