@@ -13,8 +13,8 @@ from task2.m3.model import EncoderDecoder
 
 if __name__ == "__main__":
 
-    batch_size = 2
-    data_folder = os.path.join("../..", "data_lite")
+    batch_size = 5
+    data_folder = os.path.join("../..", "data")
     src_lookup = Lookup('bert')
     tgt_lookup = Lookup('bert')
     lookup = Lookup('bert')
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     optimizer = torch.optim.Adam(model.parameters(), lr=3e-4, amsgrad=True)
     criterion = nn.NLLLoss()
     lr = None
-    max_epochs = 30
+    max_epochs = 50
 
     train(model,
           train_loader,

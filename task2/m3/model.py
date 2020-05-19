@@ -41,9 +41,7 @@ class EncoderDecoder(nn.Module):
 
 
     def run_batch(self, X_tuple, y_tuple=None, criterion=None):
-        y = y_tuple[0]
-        print("Run batch {}".format(y.shape))
-
+        y = y_tuple[0].to(self.device)
         output_decoder, attention_decoder = self.forward(X_tuple, y_tuple, teacher_forcing_ratio=0.)
 
         total_loss = 0
