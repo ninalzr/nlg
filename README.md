@@ -11,6 +11,7 @@ Output: Paragraphs
 
 # Models
 
-# m3 - Bert2Bert
-# m4 - T5
+/task2/m3 - Bert2Bert
+
+/task2/m4 - T5
 
