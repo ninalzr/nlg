@@ -11,13 +11,13 @@ from task2.util.lookup_transformers import Lookup
 from functools import partial
 
 def loader(data_folder, batch_size, lookup, src_lookup, tgt_lookup, min_seq_len_X=5, max_seq_len_X=1000, min_seq_len_y=5,
-           max_seq_len_y=1000, MEI=""):
+           max_seq_len_y=1000, MEI="", order = None):
     MEI = MEI.replace(" ", "_")
     pad_id = tgt_lookup.convert_tokens_to_ids(tgt_lookup.pad_token)
 
     train_loader = torch.utils.data.DataLoader(
         MyDataset(data_folder, lookup, type="train",  min_seq_len_X=min_seq_len_X, max_seq_len_X=max_seq_len_X, min_seq_len_y=min_seq_len_y,
-                  max_seq_len_y=max_seq_len_y, MEI=MEI),
+                  max_seq_len_y=max_seq_len_y, MEI=MEI, order = None),
         num_workers=torch.get_num_threads(),
         batch_size=batch_size,
         collate_fn=partial(paired_collate_fn, padding_idx=pad_id),
@@ -25,7 +25,7 @@ def loader(data_folder, batch_size, lookup, src_lookup, tgt_lookup, min_seq_len_
 
     valid_loader = torch.utils.data.DataLoader(
         MyDataset(data_folder, lookup, type = "dev",  min_seq_len_X=min_seq_len_X, max_seq_len_X=max_seq_len_X, min_seq_len_y=min_seq_len_y,
-                  max_seq_len_y=max_seq_len_y, MEI=MEI),
+                  max_seq_len_y=max_seq_len_y, MEI=MEI, order = None),
         num_workers=torch.get_num_threads(),
         batch_size=batch_size,
         collate_fn=partial(paired_collate_fn, padding_idx=pad_id))
@@ -64,7 +64,7 @@ def paired_collate_fn(insts, padding_idx):
 
 
 class MyDataset(torch.utils.data.Dataset):
-    def __init__(self, root_dir,  lookup, type, min_seq_len_X, max_seq_len_X, min_seq_len_y, max_seq_len_y, MEI):
+    def __init__(self, root_dir,  lookup, type, min_seq_len_X, max_seq_len_X, min_seq_len_y, max_seq_len_y, MEI, order = None):
         self.root_dir = root_dir
 
         self.X = []  # this will store joined sentences
@@ -72,10 +72,24 @@ class MyDataset(torch.utils.data.Dataset):
         self.lookup = lookup
 
 
-        with open(os.path.join(root_dir, type, MEI + '_output.txt'), 'r') as f:
-            y = [self.lookup.encode(y.strip(), add_bos_eos_tokens=True) for y in f]
-        with open(os.path.join(root_dir, type, MEI + '_sentences.txt'), 'r') as g:
-            X = [self.lookup.encode(x.strip(), add_bos_eos_tokens=True) for x in g]
+        if order == 'seq':
+            print("Input sentences are joined in sequential order.")
+            with open(os.path.join(root_dir, type, MEI + '_output_seq.txt'), 'r') as f:
+                y = [self.lookup.encode(y.strip(), add_bos_eos_tokens=True) for y in f]
+            with open(os.path.join(root_dir, type, MEI + '_sentences_seq.txt'), 'r') as g:
+                X = [self.lookup.encode(x.strip(), add_bos_eos_tokens=True) for x in g]
+
+        else:
+
+            print("Input sentences are in non-sequential order")
+
+            with open(os.path.join(root_dir, type, MEI + '_output.txt'), 'r') as f:
+                y = [self.lookup.encode(y.strip(), add_bos_eos_tokens=True) for y in f]
+            with open(os.path.join(root_dir, type, MEI + '_sentences.txt'), 'r') as g:
+                X = [self.lookup.encode(x.strip(), add_bos_eos_tokens=True) for x in g]
+
+
+
 
         cut_over_X = 0
         cut_under_X = 0
