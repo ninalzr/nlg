@@ -1,6 +1,6 @@
 # NLG-Lite
 
-Lite version of sustain-nlg. No slots, no headache!
+Lite version of sustain-nlg. 
 
 # Dataset
 
